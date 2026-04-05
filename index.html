@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Wheelview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* --- VARIÁVEIS DE CORES --- */
+        :root {
+            --bg-body: #0d1117;
+            --bg-container: #161b22;
+            --bg-input: #0d1117;
+            --text-main: #c9d1d9;
+            --text-title: #ffffff;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+            --accent-blue: #58a6ff;
+            --btn-primary: #1f6feb;
+            --btn-primary-hover: #388bfd;
+            --btn-secondary: #21262d;
+            --card-bg: #161b22;
+        }
+
+        body.light-mode {
+            --bg-body: #f0f2f5;
+            --bg-container: #ffffff;
+            --bg-input: #f8f9fa;
+            --text-main: #24292f;
+            --text-title: #1b1f24;
+            --text-muted: #57606a;
+            --border-color: #d0d7de;
+            --accent-blue: #0969da;
+            --btn-primary: #0969da;
+            --btn-primary-hover: #1a7fef;
+            --btn-secondary: #eff2f5;
+            --card-bg: #f6f8fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Garante que a página ocupe toda a tela */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--bg-container);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-title);
+        }
+
+        .theme-toggle {
+            background-color: var(--btn-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            flex-grow: 1; /* Faz o conteúdo principal empurrar o rodapé para baixo */
+        }
+
+        .container {
+            background-color: var(--bg-container);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            gap: 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        .container h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .column-left, .column-right { flex: 1; display: flex; flex-direction: column; }
+
+        textarea {
+            width: 100%;
+            height: 350px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-input);
+            color: var(--text-main);
+            font-family: monospace;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .actions-group { margin-top: 25px; display: flex; gap: 10px; }
+
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary { background-color: var(--btn-primary); color: white; }
+        .primary:hover { background-color: var(--btn-primary-hover); }
+        .secondary { background-color: var(--btn-secondary); color: var(--text-main); border: 1px solid var(--border-color); }
+
+        .results-display {
+            background-color: var(--bg-input);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .stat-card {
+            background-color: var(--bg-container);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+        .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
+
+        .ok-text { color: #56d364 !important; }
+        .nok-text { color: #f85149 !important; }
+
+        /* --- ESTILOS DO RODAPÉ --- */
+        #app-footer {
+            background-color: var(--bg-container);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end; /* Joga o logo para a direita */
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto; /* Garante que fique sempre no fundo da tela */
+        }
+
+        .footer-logo {
+            height: 40px; /* Tamanho da imagem. Se achar pequeno/grande, é só mudar aqui */
+            width: auto;
+            opacity: 0.8; /* Deixa a imagem levemente transparente para ficar elegante */
+            transition: opacity 0.3s;
+        }
+
+        .footer-logo:hover {
+            opacity: 1; /* Fica 100% visível quando passa o mouse por cima */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Análise de Wheelview</h1>
+        <button class="theme-toggle" id="themeBtn">
+            <i class="fas fa-sun"></i> <span>Alternar Tema</span>
+        </button>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="column-left">
+                <h2>Entrada de Dados</h2>
+                <textarea id="dataInput" placeholder="Cole os dados aqui..."></textarea>
+                <div class="actions-group">
+                    <button class="action-btn primary" onclick="processarTexto()">
+                        <i class="fas fa-play"></i> Analisar
+                    </button>
+                    <button class="action-btn secondary" onclick="limpar()">
+                        <i class="fas fa-trash"></i> Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="column-right">
+                <h2>Resultados</h2>
+                <div class="results-display" id="resultsArea">
+                    <div class="stat-card">
+                        <span class="stat-label">Total Processado</span>
+                        <span class="stat-value" id="valTotal">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Leituras OK (0)</span>
+                        <span class="stat-value ok-text" id="valOk">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Leituras NOK (1)</span>
+                        <span class="stat-value nok-text" id="valNok">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="app-footer">
+        <img src="GR-logo.png" alt="Logo GR" class="footer-logo">
+    </footer>
+
+    <script>
+        // --- LÓGICA DE TEMA ---
+        const themeBtn = document.getElementById('themeBtn');
+        const icon = themeBtn.querySelector('i');
+
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+            icon.classList.replace('fa-sun', 'fa-moon');
+        }
+
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            
+            if (isLight) {
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            } else {
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // --- LÓGICA DE PROCESSAMENTO ---
+        function processarTexto() {
+            const text = document.getElementById('dataInput').value;
+            const lines = text.split('\n');
+            let total = 0, ok = 0, nok = 0;
+
+            lines.forEach(line => {
+                const cols = line.split(',');
+                if (cols.length > 21) {
+                    const status = cols[21].trim();
+                    if (status === '0') { ok++; total++; }
+                    else if (status === '1') { nok++; total++; }
+                }
+            });
+
+            if (total > 0) {
+                document.getElementById('valTotal').innerText = total;
+                document.getElementById('valOk').innerText = `${ok} (${((ok/total)*100).toFixed(2)}%)`;
+                document.getElementById('valNok').innerText = `${nok} (${((nok/total)*100).toFixed(2)}%)`;
+                document.getElementById('resultsArea').style.display = 'block';
+            } else {
+                alert("Nenhum dado válido encontrado.");
+            }
+        }
+
+        function limpar() {
+            document.getElementById('dataInput').value = '';
+            document.getElementById('resultsArea').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
