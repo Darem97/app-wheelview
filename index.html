@@ -6,7 +6,7 @@
     <title>Análise de Wheelview</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* --- VARIÁVEIS DE CORES --- */
+        /* --- VARIÁVEIS DE CORES (MODO ESCURO POR PADRÃO) --- */
         :root {
             --bg-body: #0d1117;
             --bg-container: #161b22;
@@ -22,6 +22,7 @@
             --card-bg: #161b22;
         }
 
+        /* --- VARIÁVEIS PARA MODO CLARO --- */
         body.light-mode {
             --bg-body: #f0f2f5;
             --bg-container: #ffffff;
@@ -45,7 +46,7 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Garante que a página ocupe toda a tela */
+            min-height: 100vh;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -78,7 +79,7 @@
             display: flex;
             justify-content: center;
             padding: 40px 20px;
-            flex-grow: 1; /* Faz o conteúdo principal empurrar o rodapé para baixo */
+            flex-grow: 1;
         }
 
         .container {
@@ -156,29 +157,30 @@
         .stat-label { color: var(--text-muted); font-size: 0.9rem; }
         .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
 
+        /* Cores de status */
         .ok-text { color: #56d364 !important; }
         .nok-text { color: #f85149 !important; }
 
         /* --- ESTILOS DO RODAPÉ --- */
         #app-footer {
-            background-color: var(--bg-container);
+            background-color: #ffffff; /* Fundo fixo sempre branco */
             padding: 15px 30px;
             display: flex;
-            justify-content: flex-end; /* Joga o logo para a direita */
+            justify-content: flex-end; 
             align-items: center;
             border-top: 1px solid var(--border-color);
-            margin-top: auto; /* Garante que fique sempre no fundo da tela */
+            margin-top: auto; 
         }
 
         .footer-logo {
-            height: 40px; /* Tamanho da imagem. Se achar pequeno/grande, é só mudar aqui */
+            height: 40px; 
             width: auto;
-            opacity: 0.8; /* Deixa a imagem levemente transparente para ficar elegante */
+            opacity: 0.9; 
             transition: opacity 0.3s;
         }
 
         .footer-logo:hover {
-            opacity: 1; /* Fica 100% visível quando passa o mouse por cima */
+            opacity: 1; 
         }
     </style>
 </head>
@@ -194,7 +196,7 @@
     <main>
         <div class="container">
             <div class="column-left">
-                <h2>Entrada de Dados</h2>
+                <h2>Dados da Análise</h2>
                 <textarea id="dataInput" placeholder="Cole os dados aqui..."></textarea>
                 <div class="actions-group">
                     <button class="action-btn primary" onclick="processarTexto()">
