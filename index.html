@@ -6,6 +6,7 @@
     <title>Análise de Wheelview</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* --- VARIÁVEIS DE CORES (MODO ESCURO POR PADRÃO) --- */
         :root {
             --bg-body: #0d1117;
             --bg-container: #161b22;
@@ -21,6 +22,7 @@
             --card-bg: #161b22;
         }
 
+        /* --- VARIÁVEIS PARA MODO CLARO --- */
         body.light-mode {
             --bg-body: #f0f2f5;
             --bg-container: #ffffff;
@@ -45,6 +47,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         header {
@@ -54,6 +57,22 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-title);
+        }
+
+        .theme-toggle {
+            background-color: var(--btn-secondary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
 
         main {
@@ -67,11 +86,21 @@
             background-color: var(--bg-container);
             padding: 40px;
             border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 1000px;
             display: flex;
             gap: 40px;
             border: 1px solid var(--border-color);
+        }
+
+        .container h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .column-left, .column-right { flex: 1; display: flex; flex-direction: column; }
@@ -80,10 +109,13 @@
             width: 100%;
             height: 350px;
             padding: 15px;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             background-color: var(--bg-input);
             color: var(--text-main);
             font-family: monospace;
+            resize: none;
+            box-sizing: border-box;
         }
 
         .actions-group { margin-top: 25px; display: flex; gap: 10px; }
@@ -100,11 +132,12 @@
         }
 
         .primary { background-color: var(--btn-primary); color: white; }
-        .secondary { background-color: var(--btn-secondary); color: var(--text-main); }
+        .primary:hover { background-color: var(--btn-primary-hover); }
+        .secondary { background-color: var(--btn-secondary); color: var(--text-main); border: 1px solid var(--border-color); }
 
         .results-display {
             background-color: var(--bg-input);
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             display: none;
@@ -112,20 +145,24 @@
 
         .stat-card {
             background-color: var(--bg-container);
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
-        .ok-text { color: #56d364; }
-        .nok-text { color: #f85149; }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+        .stat-value { font-size: 1.3rem; font-weight: 700; color: var(--text-title); }
 
-        /* 🔹 NOVO BLOCO DE INSTRUÇÕES */
+        .ok-text { color: #56d364 !important; }
+        .nok-text { color: #f85149 !important; }
+
+        /* --- NOVO BLOCO (INSTRUÇÕES) --- */
         .instructions-box {
-            margin-top: 15px;
+            margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
             background-color: var(--bg-container);
@@ -134,16 +171,38 @@
         }
 
         .instructions-box h3 {
-            margin-top: 0;
+            margin: 0 0 10px 0;
             color: var(--accent-blue);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .instructions-box p {
-            margin: 6px 0;
+            margin: 5px 0;
+            color: var(--text-main);
         }
 
+        #app-footer {
+            background-color: #ffffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        .footer-logo {
+            height: 40px;
+            width: auto;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .footer-logo:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -151,7 +210,7 @@
 <header>
     <h1>Análise de Wheelview</h1>
     <button class="theme-toggle" id="themeBtn">
-        <i class="fas fa-sun"></i> Alternar Tema
+        <i class="fas fa-sun"></i> <span>Alternar Tema</span>
     </button>
 </header>
 
@@ -159,45 +218,72 @@
     <div class="container">
         <div class="column-left">
             <h2>Dados da Leitura</h2>
-            <textarea id="dataInput"></textarea>
+            <textarea id="dataInput" placeholder="Cole os dados aqui..."></textarea>
             <div class="actions-group">
-                <button class="action-btn primary" onclick="processarTexto()">Analisar</button>
-                <button class="action-btn secondary" onclick="limpar()">Limpar</button>
+                <button class="action-btn primary" onclick="processarTexto()">
+                    <i class="fas fa-play"></i> Analisar
+                </button>
+                <button class="action-btn secondary" onclick="limpar()">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
             </div>
         </div>
 
         <div class="column-right">
             <h2>Resultados</h2>
-
             <div class="results-display" id="resultsArea">
                 <div class="stat-card">
-                    <span>Total Processado</span>
-                    <span id="valTotal">0</span>
+                    <span class="stat-label">Total Processado</span>
+                    <span class="stat-value" id="valTotal">0</span>
                 </div>
-
                 <div class="stat-card">
-                    <span>Leituras OK</span>
-                    <span class="ok-text" id="valOk">0</span>
+                    <span class="stat-label">Leituras OK (0)</span>
+                    <span class="stat-value ok-text" id="valOk">0</span>
                 </div>
-
                 <div class="stat-card">
-                    <span>Leituras NOK</span>
-                    <span class="nok-text" id="valNok">0</span>
+                    <span class="stat-label">Leituras NOK (1)</span>
+                    <span class="stat-value nok-text" id="valNok">0</span>
                 </div>
 
-                <!-- 🔹 INSTRUÇÕES -->
+                <!-- INSTRUÇÕES ADICIONADAS -->
                 <div class="instructions-box">
-                    <h3>Como usar no banco de dados</h3>
-                    <p><strong>Medições OK:</strong> utilizar o valor de <b>Total Processado</b></p>
-                    <p><strong>Medições NOK:</strong> utilizar o valor de <b>Leituras NOK</b></p>
-                    <p><strong>Porcentagem:</strong> utilizar a porcentagem de <b>Leituras OK</b></p>
+                    <h3>Instruções para o banco de dados</h3>
+                    <p><strong>Medições OK:</strong> usar o valor de <b>Total Processado</b></p>
+                    <p><strong>Medições NOK:</strong> usar o valor de <b>Leituras NOK</b></p>
+                    <p><strong>Porcentagem:</strong> usar a porcentagem de <b>Leituras OK</b></p>
                 </div>
+
             </div>
         </div>
     </div>
 </main>
 
+<footer id="app-footer">
+    <img src="GR-logo.png" alt="Logo GR" class="footer-logo">
+</footer>
+
 <script>
+const themeBtn = document.getElementById('themeBtn');
+const icon = themeBtn.querySelector('i');
+
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    icon.classList.replace('fa-sun', 'fa-moon');
+}
+
+themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+
+    if (isLight) {
+        icon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+    } else {
+        icon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+    }
+});
+
 function processarTexto() {
     const text = document.getElementById('dataInput').value;
     const lines = text.split('\n');
