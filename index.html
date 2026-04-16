@@ -6,7 +6,6 @@
     <title>Análise de Wheelview</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* --- VARIÁVEIS DE CORES (MODO ESCURO POR PADRÃO) --- */
         :root {
             --bg-body: #0d1117;
             --bg-container: #161b22;
@@ -22,7 +21,6 @@
             --card-bg: #161b22;
         }
 
-        /* --- VARIÁVEIS PARA MODO CLARO --- */
         body.light-mode {
             --bg-body: #f0f2f5;
             --bg-container: #ffffff;
@@ -160,29 +158,6 @@
         .ok-text { color: #56d364 !important; }
         .nok-text { color: #f85149 !important; }
 
-        /* --- INSTRUÇÕES --- */
-        .instructions-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: var(--bg-container);
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
-        }
-
-        .instructions-box h3 {
-            margin: 0 0 10px 0;
-            color: var(--accent-blue);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .instructions-box p {
-            margin: 5px 0;
-            color: var(--text-main);
-        }
-
         #app-footer {
             background-color: #ffffff;
             padding: 15px 30px;
@@ -244,16 +219,16 @@
                     <span class="stat-label">Leituras NOK (1)</span>
                     <span class="stat-value nok-text" id="valNok">0</span>
                 </div>
-            </div>
 
-            <!-- 🔥 INSTRUÇÕES DINÂMICAS (ADICIONADO) -->
-            <div class="instructions-box">
-                <h3>Instruções para o banco de dados</h3>
-                <p><strong>Medições OK:</strong> <span id="instOk">0</span></p>
-                <p><strong>Medições NOK:</strong> <span id="instNok">0</span></p>
-                <p><strong>Porcentagem:</strong> <span id="instPerc">0%</span></p>
-            </div>
+                <!-- 🔥 BLOCO ADICIONADO (SEM ALTERAR O RESTO) -->
+                <div class="stat-card" style="flex-direction: column; align-items: flex-start;">
+                    <span class="stat-label">INSTRUÇÕES PARA O BANCO DE DADOS</span>
+                    <p id="instrOk">Medições OK: 0</p>
+                    <p id="instrNok">Medições NOK: 0</p>
+                    <p id="instrPerc">Porcentagem: 0%</p>
+                </div>
 
+            </div>
         </div>
     </div>
 </main>
@@ -263,60 +238,64 @@
 </footer>
 
 <script>
-        const themeBtn = document.getElementById('themeBtn');
-        const icon = themeBtn.querySelector('i');
+const themeBtn = document.getElementById('themeBtn');
+const icon = themeBtn.querySelector('i');
 
-        if (localStorage.getItem('theme') === 'light') {
-            document.body.classList.add('light-mode');
-            icon.classList.replace('fa-sun', 'fa-moon');
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light-mode');
+    icon.classList.replace('fa-sun', 'fa-moon');
+}
+
+themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    
+    if (isLight) {
+        icon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+    } else {
+        icon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+    }
+});
+
+function processarTexto() {
+    const text = document.getElementById('dataInput').value;
+    const lines = text.split('\n');
+    let total = 0, ok = 0, nok = 0;
+
+    lines.forEach(line => {
+        const cols = line.split(',');
+        if (cols.length > 21) {
+            const status = cols[21].trim();
+            if (status === '0') { ok++; total++; }
+            else if (status === '1') { nok++; total++; }
         }
+    });
 
-        themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            
-            if (isLight) {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            } else {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
+    if (total > 0) {
+        const percOk = ((ok/total)*100).toFixed(2);
 
-        function processarTexto() {
-            const text = document.getElementById('dataInput').value;
-            const lines = text.split('\n');
-            let total = 0, ok = 0, nok = 0;
+        document.getElementById('valTotal').innerText = total;
+        document.getElementById('valOk').innerText = `${ok} (${percOk}%)`;
+        document.getElementById('valNok').innerText = `${nok} (${((nok/total)*100).toFixed(2)}%)`;
 
-            lines.forEach(line => {
-                const cols = line.split(',');
-                if (cols.length > 21) {
-                    const status = cols[21].trim();
-                    if (status === '0') { ok++; total++; }
-                    else if (status === '1') { nok++; total++; }
-                }
-            });
+        // 🔥 ATUALIZA OS VALORES NUMÉRICOS
+        document.getElementById('instrOk').innerText = `Medições OK: ${total}`;
+        document.getElementById('instrNok').innerText = `Medições NOK: ${nok}`;
+        document.getElementById('instrPerc').innerText = `Porcentagem: ${percOk}%`;
 
-            if (total > 0) {
-                document.getElementById('valTotal').innerText = total;
-                document.getElementById('valOk').innerText = `${ok} (${((ok/total)*100).toFixed(2)}%)`;
-                document.getElementById('valNok').innerText = `${nok} (${((nok/total)*100).toFixed(2)}%)`;
+        document.getElementById('resultsArea').style.display = 'block';
+    } else {
+        alert("Nenhum dado válido encontrado.");
+    }
+}
 
-                document.getElementById('instOk').innerText = total;
-                document.getElementById('instNok').innerText = nok;
-                document.getElementById('instPerc').innerText = ((ok/total)*100).toFixed(2) + '%';
-
-                document.getElementById('resultsArea').style.display = 'block';
-            } else {
-                alert("Nenhum dado válido encontrado.");
-            }
-        }
-
-        function limpar() {
-            document.getElementById('dataInput').value = '';
-            document.getElementById('resultsArea').style.display = 'none';
-        }
+function limpar() {
+    document.getElementById('dataInput').value = '';
+    document.getElementById('resultsArea').style.display = 'none';
+}
 </script>
+
 </body>
 </html>
